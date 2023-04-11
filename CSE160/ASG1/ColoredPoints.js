@@ -74,28 +74,44 @@ const CIRCLE = 2;
 
 // globals for ui
 let g_selectedColor = [1.0,1.0,1.0,1.0];
-let g_selectedSize = 5;
+let g_selectedSize = 10;
 let g_selectedType = POINT;
 let g_selectedSegment = 10;
+document.getElementById("sizeSlide").value = "10"; 
 
 function addActionForHtmlUI() {
     // Button 
     document.getElementById('clearplease').onclick = function() {g_shapesList = []; clearing(); };
+    document.getElementById('undo').onclick = function() { undo(); };
+    document.getElementById('eraser').onclick = function() { eraser(); };
+
     document.getElementById('point').onclick = function() { g_selectedType = POINT };
     document.getElementById('triangle').onclick = function() { g_selectedType = TRIANGLE };
     document.getElementById('circle').onclick = function() { g_selectedType = CIRCLE };
-    document.getElementById('paint').onclick = function() { drawPic(vec); };
+    document.getElementById('paint').onclick = function() { drawCat(vec); };
   
     // Slider (color)
     document.getElementById('redSlide').addEventListener('mouseup', function() { g_selectedColor[0] = this.value / 100; });
     document.getElementById('greenSlide').addEventListener('mouseup', function() { g_selectedColor[1] = this.value / 100; });
     document.getElementById('blueSlide').addEventListener('mouseup', function() { g_selectedColor[2] = this.value / 100; });
+
+    // document.getElementById("orange").style.backgroundColor = '[1.0, 1.0, 1.0, 1.0];';
   
     // Size 
     document.getElementById('sizeSlide').addEventListener('mouseup', function() { g_selectedSize = this.value; });
     document.getElementById('segSlide').addEventListener('mouseup', function() { g_selectedSegment = this.value; });
   
+    //color
+    document.getElementById('red').onclick = function() { red(); };
+    document.getElementById('orange').onclick = function() { orange(); };
+    document.getElementById('yellow').onclick = function() { yellow(); };
+    document.getElementById('green').onclick = function() { green(); };
+    document.getElementById('blue').onclick = function() { blue(); };
+    document.getElementById('indigo').onclick = function() { indigo(); };
+    document.getElementById('violet').onclick = function() { violet(); };
 }
+
+
 
 function clearing() {
     gl.clear(gl.COLOR_BUFFER_BIT); 
@@ -131,7 +147,7 @@ let vec = [0.0, 0.3, 0.3, -0.6, -0.26, -0.6,
     0, 0.7, 0, 0.73, 0.06, 0.73
 ];
   
-function drawPic(vertices) {
+function drawCat(vertices) {
   
     //function initVertexBuffers(gl) {
     var n = 84; // The number of vertices
@@ -143,10 +159,9 @@ function drawPic(vertices) {
       return -1;
     }
   
-  
   // Bind the buffer object to target
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-  // Write date into the buffer object
+//   Write date into the buffer object
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.DYNAMIC_DRAW);
   
   var a_Position = gl.getAttribLocation(gl.program, 'a_Position');
@@ -163,7 +178,7 @@ function drawPic(vertices) {
   gl.drawArrays(gl.TRIANGLES, 0, n);
   
   //return n;
-  }
+}
 
 
 function main() {
@@ -183,6 +198,7 @@ function main() {
 
     // Clear <canvas>
     gl.clear(gl.COLOR_BUFFER_BIT);
+    
 }
 
 
@@ -209,6 +225,7 @@ function click(ev) {
     point.position = [x, y];
 
     point.color = g_selectedColor.slice();
+
     point.size = g_selectedSize;
     g_shapesList.push(point);
 
@@ -237,6 +254,87 @@ function convertCoordinatesEventToGL(ev) {
   
     x = ((x - rect.left) - canvas.width / 2) / (canvas.width / 2);
     y = (canvas.height / 2 - (y - rect.top)) / (canvas.height / 2);
+
   
     return ([x, y]);
 }
+
+let v = [0.0, 0.3, 0.3, -0.6, -0.26, -0.6];
+
+// awesomeness point - color library
+function red() {
+    g_selectedColor = [1.0, 0.0, 0.0, 1.0];    
+    document.getElementById("redSlide").value = "100";
+    document.getElementById("greenSlide").value = "0";
+    document.getElementById("blueSlide").value = "0";
+}
+
+function orange() {
+    g_selectedColor = [1.0, 0.647, 0.0, 1.0];
+    document.getElementById("redSlide").value = "100";
+    document.getElementById("greenSlide").value = "64.7";
+    document.getElementById("blueSlide").value = "0";
+}
+
+function yellow() {
+    g_selectedColor = [1.0, 1.0, 0.0, 1.0];
+    document.getElementById("redSlide").value = "100";
+    document.getElementById("greenSlide").value = "100";
+    document.getElementById("blueSlide").value = "0"; 
+}
+
+function green() {
+    g_selectedColor = [0.0, .55, .27, 1.0];
+    document.getElementById("redSlide").value = "0";
+    document.getElementById("greenSlide").value = "55";
+    document.getElementById("blueSlide").value = "27"; 
+}
+
+function blue() {
+    g_selectedColor = [0.0, .25, .53, 1.0];
+    document.getElementById("redSlide").value = "0";
+    document.getElementById("greenSlide").value = "25";
+    document.getElementById("blueSlide").value = "53"; 
+}
+
+function indigo() {
+    g_selectedColor = [.294, 0.0, .51, 1.0];
+    document.getElementById("redSlide").value = "29.4";
+    document.getElementById("greenSlide").value = "0";
+    document.getElementById("blueSlide").value = "51"; 
+}
+
+function violet() {
+    g_selectedColor = [0.878, 0.69, 1.0, 1.0];
+    document.getElementById("redSlide").value = "87.8";
+    document.getElementById("greenSlide").value = "69";
+    document.getElementById("blueSlide").value = "100"; 
+}
+
+
+function undo() {
+    g_shapesList.pop();
+    RenderAllShapes();
+}
+
+
+// actually draw all the shapes.
+function RenderAllShapes() {
+
+    // clear <canvas>
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    var len = g_shapesList.length;
+    for (var i = 0; i < len; i++) {
+        g_shapesList[i].render();
+    }
+}
+
+
+function eraser() {
+    g_selectedColor = [0.0, 0.0, 0.0, 1.0];    
+    document.getElementById("redSlide").value = "0";
+    document.getElementById("greenSlide").value = "0";
+    document.getElementById("blueSlide").value = "0"; 
+}
+
