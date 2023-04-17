@@ -87,11 +87,8 @@ const TRIANGLE = 1;
 const CIRCLE = 2;
 
 // globals for ui
-let g_selectedColor = [1.0,1.0,1.0,1.0];
-let g_selectedSize = 10;
-let g_selectedType = POINT;
-let g_selectedSegment = 10;
 let g_globalAngle = 0;
+let g_globalAngleY = 0;
 
 function addActionForHtmlUI() {
   // angle slider
@@ -121,32 +118,12 @@ function main() {
 }
 
 
-var g_shapesList = [];
-
 function click(ev) {
 
     // extract the event click 
     let [x, y] = convertCoordinatesEventToGL(ev);
 
-    // store new point 
-    let point;
-    if (g_selectedType == POINT) {
-      point = new Point();
-    } 
-    else if (g_selectedType == TRIANGLE) {
-      point = new Triangle();
-    } 
-    else {
-      point = new Circle();
-      point.segments = g_selectedSegment;
-    }
-
-    point.position = [x, y];
-
-    point.color = g_selectedColor.slice();
-
-    point.size = g_selectedSize;
-    g_shapesList.push(point);
+    g_globalAngle = x * 360;
 
     // render properly
     renderAllShapes();
@@ -173,6 +150,9 @@ function renderAllShapes() {
 
     // pass the matrix to u_ModelMatrix attribute
     var globalRotMat=new Matrix4().rotate(g_globalAngle,0,1,0);
+
+    globalRotMat.rotate(g_globalAngleY, -1, 0, 0);
+
     gl.uniformMatrix4fv(u_GlobalRotateMatrix, false, globalRotMat.elements);
 
     // Clear <canvas>
