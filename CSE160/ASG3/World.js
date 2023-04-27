@@ -10,8 +10,7 @@ var VSHADER_SOURCE = `
   uniform mat4 u_ViewMatrix;
   uniform mat4 u_ProjectionMatrix;
   void main() {
-    gl_Position = u_GlobalRotateMatrix * u_ModelMatrix * a_Position;
-    // gl_Position = u_ProjectionMatrix * u_ViewMatrix * u_GlobalRotateMatrix * u_ModelMatrix * a_Position;
+    gl_Position = u_ProjectionMatrix * u_ViewMatrix * u_GlobalRotateMatrix * u_ModelMatrix * a_Position;
     v_UV = a_UV;
   }`
 
@@ -20,9 +19,24 @@ var FSHADER_SOURCE = `
   precision mediump float;
   varying vec2 v_UV;
   uniform vec4 u_FragColor;
+  uniform sampler2D u_Sampler0;
+  uniform int u_whichTexture;
+
   void main() {
-    gl_FragColor = u_FragColor;
-    gl_FragColor = vec4(v_UV, 1.0, 1.0);
+    
+    if (u_whichTexture == -2) {
+      gl_FragColor = u_FragColor;         // use color 
+
+    } else if (u_whichTexture == -1) {    // use uv debug color
+      gl_FragColor = vec4(v_UV, 1.0, 1.0);
+
+    } else if (u_whichTexture == 0) {     // use texture 0
+      gl_FragColor = texture2D(u_Sampler0, v_UV);
+    
+    } else {                              // error, but redish
+      gl_FragColor = vec4(1,.2,.2,1);
+    }
+
   }`
 
 // declaring global variables to see changes
@@ -36,6 +50,10 @@ let u_ModelMatrix;
 let u_GlobalRotateMatrix;
 let u_ProjectionMatrix;
 let u_ViewMatrix;
+let u_whichTexture;
+
+let u_Sampler0;
+
 
 // setupWebGL() – get the canvas and gl context
 function setupWebGL() {
@@ -94,23 +112,34 @@ function connectVariablesToGLSL(){
       return;
     }
 
+    var identityM = new Matrix4();
+    gl.uniformMatrix4fv(u_ModelMatrix, false, identityM.elements);
+    
+    u_whichTexture = gl.getUniformLocation(gl.program, 'u_whichTexture');
+    if (!u_whichTexture) {
+      console.log('Failed to get u_whichTexture');
+      return;
+    }
+
+    u_Sampler0 = gl.getUniformLocation(gl.program, 'u_Sampler0'); //sky
+    if (!u_Sampler0) {
+      console.log('Failed to get u_Sampler0');
+      return false;
+    }
+
     u_ViewMatrix = gl.getUniformLocation(gl.program, 'u_ViewMatrix');
     if (!u_ViewMatrix) {
       console.log('Failed to get the storage location of u_ViewMatrix');
       return;
     }
 
-    var identityM = new Matrix4();
-    gl.uniformMatrix4fv(u_ModelMatrix, false, identityM.elements);
-
     u_ProjectionMatrix = gl.getUniformLocation(gl.program, 'u_ProjectionMatrix');
     if (!u_ProjectionMatrix) {
       console.log('Failed to get the storage location of u_ProjectionMatrix');
       return;
     }
+
 }
-
-
 
 // Constants
 const POINT = 0;
@@ -130,6 +159,9 @@ let g_animation = 0;
 let shift = 0;
 let time = 0;
 
+
+var g_camera = new Camera();
+
 function addActionForHtmlUI() {
 
   // button
@@ -146,6 +178,31 @@ function addActionForHtmlUI() {
   document.getElementById('smalltail').addEventListener('mousemove', function () { g_smallTail = this.value; renderAllShapes(); });
 }
 
+function initTextures() {
+  var image = new Image();
+  if(!image) {
+    console.log('Failed to create the image object');
+    return false;
+  }
+  image.onload = function(){loadTexture(image); };
+  image.src = 'flower.jpg';
+  return true;
+}
+
+function loadTexture(image) {
+  var texture = gl.createTexture();
+  if(!texture) {
+    console.log('Failed to create the texture object');
+    return false;
+  }
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
+  gl.uniform1i(u_Sampler0, 0);
+  console.log('finished loadTexture0');
+}
 
 function main() {
 
@@ -158,6 +215,9 @@ function main() {
     // Register function (event handler) to be called on a mouse press
     canvas.onmousedown = click;
     canvas.onmousemove = function(ev) {if(ev.buttons == 1) { click(ev) } }; 
+    document.onkeydown = keydown;
+
+    initTextures();
 
     // Specify the color for clearing <canvas>
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -234,10 +294,50 @@ function convertCoordinatesEventToGL(ev) {
     return ([x, y]);
 }
 
+function keydown(ev) {
+  if(ev.keyCode==	65) { // a
+    g_camera.left();
+
+  } else if(ev.keyCode == 68) { // d
+    g_camera.right();
+    
+  } else if(ev.keyCode == 87) { // w
+    g_camera.forward();
+
+  } else if(ev.keyCode == 83) { // s
+    g_camera.back();
+    
+  } else if(ev.keyCode == 81) { // q
+    g_camera.panLeft();
+    
+  } else if(ev.keyCode == 69) { // e
+    g_camera.panRight();
+  }
+  renderAllShapes();
+  console.log(ev.keyCode);
+}
+
+var g_eye = [0, 0, 3];
+var g_at = [0, 0, -100];
+var g_up = [0, 1, 0];
+
 // actually draw all the shapes.
 function renderAllShapes() {
 
     var startTime = performance.now();  
+
+    // pass the projection matrix
+    var projMat = new Matrix4();
+    projMat.setPerspective(50, canvas.width / canvas.height, .1, 1000);
+    gl.uniformMatrix4fv(u_ProjectionMatrix, false, projMat.elements);
+
+    // pass the view matrix
+    var viewMat=new Matrix4();
+    viewMat.setLookAt(
+      g_camera.eye.elements[0], g_camera.eye.elements[1], g_camera.eye.elements[2],
+      g_camera.at.elements[0], g_camera.at.elements[1], g_camera.at.elements[2],
+      g_camera.up.elements[0], g_camera.up.elements[1], g_camera.up.elements[2]);
+    gl.uniformMatrix4fv(u_ViewMatrix, false, viewMat.elements);
 
     // pass the matrix to u_ModelMatrix attribute
     var globalRotMat=new Matrix4().rotate(g_globalAngleY,1,0,0);
@@ -248,6 +348,15 @@ function renderAllShapes() {
     // Clear <canvas>
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.clear(gl.COLOR_BUFFER_BIT);
+
+      // floor
+      var floor = new Cube();
+      //floor.color = [1, 0, 0, 1];
+      floor.textureNum = 0;
+      floor.matrix.translate(0, -.75, 0);
+      floor.matrix.scale(10, 0, 10);
+      floor.matrix.translate(-.5, 0, -.5);
+      floor.render();
 
     // Body shape
     var body = new Cube();

@@ -3,6 +3,7 @@ class Cube {
         this.type='cube';
         this.color = [1.0, 1.0, 1.0, 1.0];
         this.matrix = new Matrix4();
+        this.textureNum = -1;
     }
 
 
@@ -10,6 +11,9 @@ class Cube {
         //var xy = this.position;
         var rgba = this.color;
         //var size = this.size;
+
+        // pass the texture number
+        gl.uniform1i(u_whichTexture, this.textureNum);
 
         // Pass the position of a point to a_Position variable
         gl.uniform4f(u_FragColor, rgba[0], rgba[1], rgba[2], rgba[3]);
