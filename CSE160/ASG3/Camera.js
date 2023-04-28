@@ -9,7 +9,7 @@ class Camera {
     }
 
     forward(move = 0) {
-        var f = new Vector3;
+        let f = new Vector3;
         f.set(this.at);
         f.sub(this.eye);
         f.normalize();
@@ -19,7 +19,7 @@ class Camera {
     }
  
     back(move = 0) {
-        var f = new Vector3;
+        let f = new Vector3;
         f.set(this.eye);
         f.sub(this.at);
         f.normalize();
@@ -29,10 +29,10 @@ class Camera {
     }
  
     left() {
-        var f = new Vector3;   
+        let f = new Vector3;   
         f.set(this.at);
         f.sub(this.eye);
-        var s = Vector3.cross(this.up, f);
+        let s = Vector3.cross(this.up, f);
         f.normalize();
         f.mul(this.speed);
         this.eye.add(s);
@@ -40,10 +40,10 @@ class Camera {
     }
  
     right() {
-        var f = new Vector3;
+        let f = new Vector3;
         f.set(this.eye);
         f.sub(this.at);
-        var s = Vector3.cross(this.up, f);
+        let s = Vector3.cross(this.up, f);
         f.normalize();
         f.mul(this.speed);
         this.eye.add(s);
@@ -51,7 +51,7 @@ class Camera {
     }
  
     panLeft() {
-        var f = new Vector3;
+        let f = new Vector3;
         f.set(this.at);
         f.sub(this.eye);
         let rotationMatrix = new Matrix4();

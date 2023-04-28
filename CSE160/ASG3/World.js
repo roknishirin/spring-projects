@@ -20,6 +20,9 @@ var FSHADER_SOURCE = `
   varying vec2 v_UV;
   uniform vec4 u_FragColor;
   uniform sampler2D u_Sampler0;
+  uniform sampler2D u_Sampler1;
+  uniform sampler2D u_Sampler2;
+  uniform sampler2D u_Sampler3;
   uniform int u_whichTexture;
 
   void main() {
@@ -30,8 +33,17 @@ var FSHADER_SOURCE = `
     } else if (u_whichTexture == -1) {    // use uv debug color
       gl_FragColor = vec4(v_UV, 1.0, 1.0);
 
-    } else if (u_whichTexture == 0) {     // use texture 0
+    } else if (u_whichTexture == 0) {     // use texture 0 == flower
       gl_FragColor = texture2D(u_Sampler0, v_UV);
+
+    } else if (u_whichTexture == -3) {    // use texture 1 == sky
+      gl_FragColor = texture2D(u_Sampler1, v_UV);
+
+    } else if (u_whichTexture == -4) {    // use texture 2 == seaweed
+      gl_FragColor = texture2D(u_Sampler2, v_UV);
+
+    } else if (u_whichTexture == -5) {    // use texture 2 == fish
+      gl_FragColor = texture2D(u_Sampler3, v_UV);
     
     } else {                              // error, but redish
       gl_FragColor = vec4(1,.2,.2,1);
@@ -53,6 +65,9 @@ let u_ViewMatrix;
 let u_whichTexture;
 
 let u_Sampler0;
+let u_Sampler1;
+let u_Sampler2;
+let u_Sampler3;
 
 
 // setupWebGL() – get the canvas and gl context
@@ -121,9 +136,27 @@ function connectVariablesToGLSL(){
       return;
     }
 
-    u_Sampler0 = gl.getUniformLocation(gl.program, 'u_Sampler0'); //sky
+    u_Sampler0 = gl.getUniformLocation(gl.program, 'u_Sampler0'); //flower
     if (!u_Sampler0) {
       console.log('Failed to get u_Sampler0');
+      return false;
+    }
+
+    u_Sampler1 = gl.getUniformLocation(gl.program, 'u_Sampler1'); //sea
+    if (!u_Sampler1) {
+      console.log('Failed to get u_Sampler1');
+      return false;
+    }
+
+    u_Sampler2 = gl.getUniformLocation(gl.program, 'u_Sampler2'); //seaweed
+    if (!u_Sampler2) {
+      console.log('Failed to get u_Sampler2');
+      return false;
+    }
+
+    u_Sampler3 = gl.getUniformLocation(gl.program, 'u_Sampler3'); //fish
+    if (!u_Sampler3) {
+      console.log('Failed to get u_Sampler3');
       return false;
     }
 
@@ -185,7 +218,41 @@ function initTextures() {
     return false;
   }
   image.onload = function(){loadTexture(image); };
-  image.src = 'flower.jpg';
+  image.src = 'sand.jpg';
+  return true;
+}
+
+function initTextures1() {
+  var image1 = new Image();
+  if(!image1) {
+    console.log('Failed to create the image object');
+    return false;
+  }
+  image1.onload = function(){loadTexture1(image1); };
+  image1.src = 'sky.jpg';
+  // image1.src = 'fox.png'
+  return true;
+}
+
+function initTextures2() {
+  var image2 = new Image();
+  if(!image2) {
+    console.log('Failed to create the image object');
+    return false;
+  }
+  image2.onload = function(){loadTexture2(image2); };
+  image2.src = 'seaweed.jpg';
+  return true;
+}
+
+function initTextures3() {
+  var image3 = new Image();
+  if(!image3) {
+    console.log('Failed to create the image object');
+    return false;
+  }
+  image3.onload = function(){loadTexture3(image3); };
+  image3.src = 'fish.jpg';
   return true;
 }
 
@@ -204,6 +271,51 @@ function loadTexture(image) {
   console.log('finished loadTexture0');
 }
 
+function loadTexture1(image) {
+  var texture = gl.createTexture();
+  if(!texture) {
+    console.log('Failed to create the texture object');
+    return false;
+  }
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+  gl.activeTexture(gl.TEXTURE1);
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
+  gl.uniform1i(u_Sampler1, 1);
+  console.log('finished loadTexture1');
+}
+
+function loadTexture2(image) {
+  var texture = gl.createTexture();
+  if(!texture) {
+    console.log('Failed to create the texture object');
+    return false;
+  }
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+  gl.activeTexture(gl.TEXTURE2);
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
+  gl.uniform1i(u_Sampler2, 2);
+  console.log('finished loadTexture2');
+}
+
+function loadTexture3(image) {
+  var texture = gl.createTexture();
+  if(!texture) {
+    console.log('Failed to create the texture object');
+    return false;
+  }
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+  gl.activeTexture(gl.TEXTURE3);
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
+  gl.uniform1i(u_Sampler3, 3);
+  console.log('finished loadTexture3');
+}
+
 function main() {
 
     setupWebGL();
@@ -216,8 +328,11 @@ function main() {
     canvas.onmousedown = click;
     canvas.onmousemove = function(ev) {if(ev.buttons == 1) { click(ev) } }; 
     document.onkeydown = keydown;
-
+    // initTextures1();
     initTextures();
+    initTextures1();
+    initTextures2();
+    initTextures3();
 
     // Specify the color for clearing <canvas>
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -296,10 +411,10 @@ function convertCoordinatesEventToGL(ev) {
 
 function keydown(ev) {
   if(ev.keyCode==	65) { // a
-    g_camera.left();
+    g_camera.eye.elements[0] -= 0.2;
 
   } else if(ev.keyCode == 68) { // d
-    g_camera.right();
+    g_camera.eye.elements[0] += 0.2;
     
   } else if(ev.keyCode == 87) { // w
     g_camera.forward();
@@ -309,13 +424,42 @@ function keydown(ev) {
     
   } else if(ev.keyCode == 81) { // q
     g_camera.panLeft();
-    
+
   } else if(ev.keyCode == 69) { // e
     g_camera.panRight();
   }
   renderAllShapes();
   console.log(ev.keyCode);
 }
+
+var g_map = [
+  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+];
+
+function drawMap() {
+  for (let x = 0; x < 10; x++) {
+    for (let y = 0; y < 10; y++) {
+      if (g_map[x][y] == 1) {
+        var walls = new Cube();
+        walls.textureNum = -4;
+        walls.matrix.scale(1, 1, 1);
+        walls.matrix.translate(x-4, -.75, y-4);
+        walls.render();
+      }
+    }
+  }
+}
+
+
 
 var g_eye = [0, 0, 3];
 var g_at = [0, 0, -100];
@@ -349,14 +493,24 @@ function renderAllShapes() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
-      // floor
-      var floor = new Cube();
-      //floor.color = [1, 0, 0, 1];
-      floor.textureNum = 0;
-      floor.matrix.translate(0, -.75, 0);
-      floor.matrix.scale(10, 0, 10);
-      floor.matrix.translate(-.5, 0, -.5);
-      floor.render();
+    // ground
+    var ground = new Cube();
+    ground.color = [1,1,0,1];
+    ground.textureNum = 0;
+    ground.matrix.translate(0, -.75, 0);
+    ground.matrix.scale(10, 0, 10);
+    ground.matrix.translate(-.5, 0, -.5);
+    ground.render();
+
+    // sky
+    var sky = new Cube();
+    sky.color = [1,0,1,1];
+    sky.textureNum = -3;
+    sky.matrix.scale(50, 50, 50);
+    sky.matrix.translate(-.5, -.5, -.5);
+    sky.render();
+
+    drawMap();
 
     // Body shape
     var body = new Cube();
