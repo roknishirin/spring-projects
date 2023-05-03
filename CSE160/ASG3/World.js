@@ -229,7 +229,7 @@ function initTextures1() {
     return false;
   }
   image1.onload = function(){loadTexture1(image1); };
-  image1.src = 'sky.jpg';
+  image1.src = 'underwater.jpg';
   // image1.src = 'fox.png'
   return true;
 }
@@ -432,28 +432,79 @@ function keydown(ev) {
   console.log(ev.keyCode);
 }
 
+
+
 var g_map = [
-  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-  [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+  [1, 0, .5, 0, .5, 0, 0, 0, 3, 0, 2, 0, 1],
+  [1, .5, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 1],
+  [1, 0, 0, 0, 0, 0, .5, 0, 3, 0, 0, 4, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 1],
+  [1, 2, 0, .5, 0, 0, 0, 0, 0, 0, 2, 2, 1],
+  [1, 0, 0, 0, 0, 0, .5, 0, 0, 0, 0, 4, 1],
+  [1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 3, 2, 3, 0, 2, 0, 0, 0, 0, 2, 0, 1],
+  [1, 0, 0, 0, 2, 2, 2, 0, 0, 0, 4, 2, 1],
+  [1, 4, 0, 0, 0, 0, 0, 0, 0, 3, 4, 0, 1],
+  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 ];
 
 function drawMap() {
-  for (let x = 0; x < 10; x++) {
-    for (let y = 0; y < 10; y++) {
+  for (let x = 0; x < 13; x++) {
+    for (let y = 0; y < 13; y++) {
       if (g_map[x][y] == 1) {
         var walls = new Cube();
         walls.textureNum = -4;
         walls.matrix.scale(1, 1, 1);
+        walls.matrix.translate(x-4, -.9, y-4);
+        walls.renderquickly();
+      }
+      if (g_map[x][y] == .5) {
+        var walls = new Cube();
+        walls.textureNum = -4;
+        walls.matrix.scale(1, 1, 1);
+        walls.matrix.translate(x-4, -1.4, y-4);
+        walls.renderquickly();
+      }
+      if (g_map[x][y] == 3) {
+        var walls = new Cube();
+        walls.textureNum = -5;
+        walls.matrix.scale(1, 1, 1);
         walls.matrix.translate(x-4, -.75, y-4);
-        walls.render();
+        walls.renderquickly();
+      }
+      if (g_map[x][y] == 2) {
+        var walls = new Cube();
+        walls.textureNum = -4;
+        walls.matrix.scale(1, 1, 1);
+        walls.matrix.translate(x-4, -.75, y-4);
+        walls.renderquickly();
+
+        var wall2 = new Cube();
+        wall2.textureNum = -4;
+        wall2.matrix.scale(1, 1, 1);
+        wall2.matrix.translate(x-4, -.25, y-4);
+        wall2.renderquickly();
+      }
+      if (g_map[x][y] == 4) {
+        var walls = new Cube();
+        walls.textureNum = -4;
+        walls.matrix.scale(1, 1, 1);
+        walls.matrix.translate(x-4, -.75, y-4);
+        walls.renderquickly();
+
+        var wall2 = new Cube();
+        wall2.textureNum = -4;
+        wall2.matrix.scale(1, 1, 1);
+        wall2.matrix.translate(x-4, -.25, y-4);
+        wall2.renderquickly();
+
+        var wall3 = new Cube();
+        wall3.textureNum = -4;
+        wall3.matrix.scale(1, 1, 1);
+        wall3.matrix.translate(x-4, .25, y-4);
+        wall3.renderquickly();
       }
     }
   }
@@ -498,7 +549,7 @@ function renderAllShapes() {
     ground.color = [1,1,0,1];
     ground.textureNum = 0;
     ground.matrix.translate(0, -.75, 0);
-    ground.matrix.scale(10, 0, 10);
+    ground.matrix.scale(17, 0, 17);
     ground.matrix.translate(-.5, 0, -.5);
     ground.render();
 
@@ -507,7 +558,7 @@ function renderAllShapes() {
     sky.color = [1,0,1,1];
     sky.textureNum = -3;
     sky.matrix.scale(50, 50, 50);
-    sky.matrix.translate(-.5, -.5, -.5);
+    sky.matrix.translate(-.5, -.2, -.5);
     sky.render();
 
     drawMap();
