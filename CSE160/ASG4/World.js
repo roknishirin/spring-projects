@@ -34,6 +34,7 @@ var FSHADER_SOURCE = `
   uniform vec3 u_cameraPos;
   varying vec4 v_VertPos;
   uniform bool u_lightOn;
+  uniform vec3 u_ambientColor;
 
   void main() {
     
@@ -80,6 +81,8 @@ var FSHADER_SOURCE = `
 
     vec3 diffuse = vec3(gl_FragColor) * nDotL * 0.7;
     vec3 ambient = vec3(gl_FragColor) * 0.2;
+
+    ambient = ambient * u_ambientColor;
     
     if(u_lightOn) {
       if(u_whichTexture == -2) {
@@ -111,6 +114,7 @@ let u_Sampler3;
 let u_lightPos;
 let u_cameraPos;
 let u_lightOn;
+let u_ambientColor;
 
 
 // setupWebGL() – get the canvas and gl context
@@ -239,6 +243,12 @@ function connectVariablesToGLSL(){
       return;
     }
 
+    u_ambientColor = gl.getUniformLocation(gl.program, 'u_ambientColor');
+    if (!u_ambientColor) {
+      console.log('Failed to get the storage location of u_ambientColor');
+      return;
+    }
+
 }
 
 // Constants
@@ -261,7 +271,7 @@ let time = 0;
 let g_normalOn=false;
 let g_lightPos = [0, 1, -2];
 let g_lightOn = true;
-
+let g_ambientColor = [1,1,1,1];
 
 var g_camera = new Camera();
 
@@ -278,6 +288,11 @@ function addActionForHtmlUI() {
   // button
   document.getElementById('on').addEventListener('click', function () { g_animation = true; });
   document.getElementById('off').addEventListener('click', function () { g_animation = false; });
+
+  // color slider
+  document.getElementById('lightSlideR').addEventListener('mousemove', function(ev) {if(ev.buttons == 1) {g_ambientColor[0] = this.value/255; renderAllShapes();}}); 
+  document.getElementById('lightSlideG').addEventListener('mousemove', function(ev) {if(ev.buttons == 1) {g_ambientColor[1] = this.value/255; renderAllShapes();}}); 
+  document.getElementById('lightSlideB').addEventListener('mousemove', function(ev) {if(ev.buttons == 1) {g_ambientColor[2] = this.value/255; renderAllShapes();}});  
 
   // light slider
   document.getElementById('lightSlideX').addEventListener('mousemove', function(ev) {if(ev.buttons == 1) {g_lightPos[0] = this.value/100; renderAllShapes();}}); 
@@ -651,6 +666,8 @@ function renderAllShapes() {
     drawMap();
 
     // Light
+    gl.uniform3f(u_ambientColor, g_ambientColor[0],g_ambientColor[1], g_ambientColor[2]);
+
     gl.uniform3f(u_lightPos, g_lightPos[0], g_lightPos[1], g_lightPos[2]);
 
     gl.uniform3f(u_cameraPos, g_camera.eye.elements[0], g_camera.eye.elements[1], g_camera.eye.elements[2]);
@@ -673,6 +690,15 @@ function renderAllShapes() {
     if (g_normalOn) sphere.textureNum = -6;
     sphere.matrix.scale(.6,.6,.6);
     sphere.render();
+
+    // new cube
+    var squash = new Cube();
+    squash.color = [1, 0.412, 0.706, 1.0];
+    squash.matrix.translate(-1.3, -.7, 1.3);
+    squash.textureNum = -2;
+    if(g_normalOn) squash.textureNum= -6;
+    squash.matrix.scale(.6,.6,.6);
+    squash.renderquickly();
 
     // Body shape
     var body = new Cube();
