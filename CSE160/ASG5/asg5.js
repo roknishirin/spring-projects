@@ -327,13 +327,6 @@ function main() {
     ];
 
 
-    // material for naother shape
-    // const loader = new THREE.TextureLoader();
-
-    // const material = new THREE.MeshBasicMaterial({
-    //     map: loader.load('./img/metal.jpg'),
-    // });
-
     /* ------------------------------------ Screen ------------------------------------ */
     const loader = new THREE.TextureLoader();
     function makeScreen(width, height, depth, color, material, x, y, z, name) {
@@ -418,6 +411,20 @@ function main() {
         renderer.setRenderTarget(renderTarget);
         renderer.render(scene, sonicCamera);
         renderer.setRenderTarget(null);
+
+        // Change color of the spheres
+        const hue1 = (time * 60) % 360;          // for Spheres
+        const hue2 = ((time + 0.99) * 60) % 360; // for diamonds
+
+        for (let i = 0; i < spheres.length; i++) {
+            // Update spheres's color using HSL to RGB conversion
+            spheres[i].material.color.setHSL(hue1 / 360, 0.7, 0.7);
+        }
+
+        for (let i = 0; i < diamond.length; i++) {
+            // Update diamonds's color using HSL to RGB conversion
+            diamond[i].material.color.setHSL(hue2 / 360, 1, 0.5);
+        }
 
         renderer.render(scene, camera);
         requestAnimationFrame(render);

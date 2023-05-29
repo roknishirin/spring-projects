@@ -25,6 +25,7 @@ export class PickHelper {
 			this.pickedObject = intersectedObjects[0].object;
 			
 			// reset the emissiveness of the previous object
+			// the emissive code is from maansilv 
 			if ((this.prevObject != null)&&(this.prevObject.material.length == 6)){
 				this.prevObject.material[4].emissive = {r:0, g:0, b:0};
 				this.prevObject.material[4].emissiveIntensity = 0;
