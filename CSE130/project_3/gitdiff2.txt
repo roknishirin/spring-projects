@@ -1,0 +1,40 @@
+Student 1 comes in
+Student 1 entered
+Student 2 comes in
+Student 2 entered
+Student 3 comes in
+Student 3 entered
+Cleaning 1 comes in
+Student 4 comes in
+Student 5 comes in
+Student 6 comes in
+Student 7 comes in
+Student 1 leaves
+Student 1 left
+Student 2 leaves
+Student 2 left
+Student 3 leaves
+Student 3 left
+Cleaning 1 entered
+Cleaning 2 comes in
+Student 1 comes in
+Cleaning 1 leaves
+Cleaning 1 left
+Cleaning 2 entered
+Cleaning 2 leaves
+Cleaning 2 left
+Student 6 entered
+Student 5 entered
+Student 4 entered
+Student 4 leaves
+Student 4 left
+Student 7 entered
+Student 5 leaves
+Student 5 left
+Student 1 entered
+Student 6 leaves
+Student 6 left
+Student 7 leaves
+Student 7 left
+Student 1 leaves
+Student 1 left
